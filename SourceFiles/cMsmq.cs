@@ -250,6 +250,11 @@ namespace cMsmq
             }
         }
 
+        public static string GetOwner(string queueName)
+        {
+            return GetOwner(new QueuePath(queueName));
+        }
+
         public static string GetOwner(QueuePath queuePath)
         {
             var gchSecurityDescriptor = GetSecurityDescriptorHandle(queuePath, (int)SecurityInformation.Owner);

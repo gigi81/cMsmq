@@ -549,16 +549,16 @@ function Get-cMsmqQueuePermission
         Specifies the name of the cluster
     #>
     [CmdletBinding()]
-    #[OutputType([System.Messaging.MessageQueueAccessRights])]
+    [OutputType([System.Messaging.MessageQueueAccessRights])]
     param
     (
         [Parameter(Mandatory = $true)]
         [String]
         $Name,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [String]
-        $Principal,
+        $Principal = ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name),
         
         [Parameter(Mandatory = $false)]
         [String]
@@ -570,6 +570,7 @@ function Get-cMsmqQueuePermission
     try
     {
         Invoke-Command -ScriptBlock {
+			[CmdletBinding()]
             param(
                 $Name,
                 $Principal
@@ -589,7 +590,7 @@ function Get-cMsmqQueuePermission
                 Write-Error -Message $_.Exception.Message
                 return
             }
-        } -Session $session -ArgumentList $Name,$Principal,$Cluster
+        } -Session $session -ArgumentList $Name,$Principal
     }
     finally
     {
@@ -627,7 +628,7 @@ function Test-cMsmqPermissions
         
         [Parameter(Mandatory = $false)]
         [String]
-        $Principal = { [System.Security.Principal.WindowsIdentity]::GetCurrent().Name },
+        $Principal = ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name),
         
         [Parameter(Mandatory = $false)]
         [String]
@@ -692,7 +693,7 @@ function Set-cMsmqPermissions
         
         [Parameter(Mandatory = $false)]
         [String]
-        $Principal = { [System.Security.Principal.WindowsIdentity]::GetCurrent().Name },
+        $Principal = ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name),
         
         [Parameter(Mandatory = $false)]
         [String]

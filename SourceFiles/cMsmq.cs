@@ -106,6 +106,11 @@ namespace cMsmq
         {
             return string.Format(QueuePathFormat, queueName);
         }
+
+        static public implicit operator string(QueuePath queue)
+        {
+            return queue.ToString();
+        }
     }
 
     public class Security
@@ -151,9 +156,7 @@ namespace cMsmq
 
         private static string TranslateSidToUserName(SecurityIdentifier sid)
         {
-            var account = (NTAccount)sid.Translate(typeof(NTAccount));
-
-            return account.ToString();
+            return ((NTAccount)sid.Translate(typeof(NTAccount))).ToString();
         }
 
         private static ACCESS_ALLOWED_ACE GetAce(IntPtr pSecurityDescriptor, string sid)
@@ -198,74 +201,75 @@ namespace cMsmq
             }
         }
 
-        private static GCHandle GetSecurityDescriptorHandle(QueuePath queuePath, int securityInformation)
+        private static GCHandle GetSecurityDescriptorHandle(QueuePath queue, int securityInformation)
         {
-            byte[] securityDescriptorBytes;
             int length;
-            int lengthNeeded;
             uint result;
 
-            string formatName = queuePath.ToString();
-
-            result = Security.MQGetQueueSecurity(formatName, securityInformation, IntPtr.Zero, 0, out lengthNeeded);
+            result = Security.MQGetQueueSecurity(queue, securityInformation, IntPtr.Zero, 0, out length);
 
             if (result != Security.MQ_ERROR_SECURITY_DESCRIPTOR_TOO_SMALL)
+                throw new Exception(Security.GetErrorMessage(result));
+
+            var data = new byte[length];
+            var gchSecurityDescriptor = GCHandle.Alloc(data, GCHandleType.Pinned);
+
+            try
             {
-                string message = Security.GetErrorMessage(result);
-                throw new Exception(message);
+                var pSecurityDescriptor = gchSecurityDescriptor.AddrOfPinnedObject();
+
+                result = Security.MQGetQueueSecurity(queue, securityInformation, pSecurityDescriptor, length, out length);
+
+                if (result != Security.MQ_OK)
+                    throw new Exception(Security.GetErrorMessage(result));
+
+                var securityDescriptor = new SECURITY_DESCRIPTOR();
+                Marshal.PtrToStructure(pSecurityDescriptor, securityDescriptor);
+
+                return gchSecurityDescriptor;
             }
-
-            length = lengthNeeded;
-            securityDescriptorBytes = new byte[length];
-
-            IntPtr pSecurityDescriptor = new IntPtr();
-            GCHandle gchSecurityDescriptor = GCHandle.Alloc(securityDescriptorBytes, GCHandleType.Pinned);
-            pSecurityDescriptor = gchSecurityDescriptor.AddrOfPinnedObject();
-
-            result = Security.MQGetQueueSecurity(formatName, securityInformation, pSecurityDescriptor, length, out lengthNeeded);
-
-            if (result != Security.MQ_OK)
+            catch
             {
                 gchSecurityDescriptor.Free();
-
-                string message = Security.GetErrorMessage(result);
-                throw new Exception(message);
+                throw;
             }
-
-            var securityDescriptor = new SECURITY_DESCRIPTOR();
-            Marshal.PtrToStructure(pSecurityDescriptor, securityDescriptor);
-
-            return gchSecurityDescriptor;
         }
 
         public static MessageQueueAccessRights GetAccessMask(QueuePath queuePath, string userName)
         {
             var sid = TranslateUserNameToSid(userName);
-
-
             var gchSecurityDescriptor = GetSecurityDescriptorHandle(queuePath, (int)SecurityInformation.Dacl);
-            var ace = GetAce(gchSecurityDescriptor.AddrOfPinnedObject(), sid);
-            var aceMask = ace.Mask;
 
-            gchSecurityDescriptor.Free();
-
-            return aceMask;
+            try
+            {
+                return GetAce(gchSecurityDescriptor.AddrOfPinnedObject(), sid).Mask;
+            }
+            finally
+            {
+                gchSecurityDescriptor.Free();
+            }
         }
 
         public static string GetOwner(QueuePath queuePath)
         {
-            IntPtr pOwner;
-            bool ownerDefaulted;
-
             var gchSecurityDescriptor = GetSecurityDescriptorHandle(queuePath, (int)SecurityInformation.Owner);
-            Security.GetSecurityDescriptorOwner(gchSecurityDescriptor.AddrOfPinnedObject(), out pOwner, out ownerDefaulted);
 
-            var ownerSid = new SecurityIdentifier(pOwner);
-            string ownerUserName = TranslateSidToUserName(ownerSid);
+            try
+            {
+                IntPtr pOwner;
+                bool ownerDefaulted;
 
-            gchSecurityDescriptor.Free();
+                Security.GetSecurityDescriptorOwner(gchSecurityDescriptor.AddrOfPinnedObject(), out pOwner, out ownerDefaulted);
 
-            return ownerUserName;
+                var ownerSid = new SecurityIdentifier(pOwner);
+                string ownerUserName = TranslateSidToUserName(ownerSid);
+
+                return ownerUserName;
+            }
+            finally
+            {
+                gchSecurityDescriptor.Free();
+            }
         }
 
         #region P/Invoke Definitions

@@ -4,7 +4,7 @@
 #Requires -Version 4
 
 @{
-	RootModule = 'cMsmq.psm1'
+    RootModule = 'cMsmq.psm1'
     ModuleVersion = '1.0.4'
     GUID = 'a9af3532-64f2-43b4-81f1-a5324f553dd1'
     Author = 'Serge Nikalaichyk'

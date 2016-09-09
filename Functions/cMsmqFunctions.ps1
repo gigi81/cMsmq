@@ -357,10 +357,10 @@ function Reset-cMsmqQueueSecurity
         $Cluster
     )
     
-	if (-not $PSCmdlet.ShouldProcess($Name, 'Reset Queue Security'))
-	{
-		return
-	}
+    if (-not $PSCmdlet.ShouldProcess($Name, 'Reset Queue Security'))
+    {
+        return
+    }
 
     $session = New-cMsmqSession $Cluster
 
@@ -377,8 +377,8 @@ function Reset-cMsmqQueueSecurity
             
             $QueuePath = '.\private$\{0}' -f $Name
             $QueueOwner = [cMsmq.Security]::GetOwner($Name)
-			$CurrentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-			
+            $CurrentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+            
             Write-Verbose -Message "Queue '$Name' Owner is '$QueueOwner' while current user is '$CurrentUser'"
 
             if ($CurrentUser -ne $QueueOwner)
@@ -569,7 +569,7 @@ function Get-cMsmqQueuePermission
     try
     {
         Invoke-Command -ScriptBlock {
-			[CmdletBinding()]
+            [CmdletBinding()]
             param(
                 $Name,
                 $Principal
@@ -634,14 +634,14 @@ function Test-cMsmqPermissions
         $Cluster
     )
     
-	Write-Verbose -Message "Testing if the user '$Principal' has the permission necessary to perform the operation ($Permission)"
-	$CurrentUserPermission = Get-cMsmqQueuePermission -Name $Name -Principal $Principal -Cluster $Cluster -ErrorAction SilentlyContinue
+    Write-Verbose -Message "Testing if the user '$Principal' has the permission necessary to perform the operation ($Permission)"
+    $CurrentUserPermission = Get-cMsmqQueuePermission -Name $Name -Principal $Principal -Cluster $Cluster -ErrorAction SilentlyContinue
 
-	if (-not $CurrentUserPermission -or -not $CurrentUserPermission.HasFlag($Permission))
-	{
-		Write-Verbose "User '$Principal' does not have the '$Permission' permission on queue '$Name'."
-		return $false
-	}
+    if (-not $CurrentUserPermission -or -not $CurrentUserPermission.HasFlag($Permission))
+    {
+        Write-Verbose "User '$Principal' does not have the '$Permission' permission on queue '$Name'."
+        return $false
+    }
     
     return $true
 }

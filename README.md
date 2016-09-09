@@ -22,6 +22,7 @@ The **cMsmqQueue** DSC resource provides a mechanism to manage private MSMQ queu
 * **Label**: Indicates the description of the queue.
 * **PrivacyLevel**: Indicates the privacy level associated with the queue.
 * **QueueQuota**: Indicates the maximum size of the queue in KB.
+* **Cluster**: The name of the failover cluster where to create the queue.
 
 ### cMsmqQueuePermissionEntry
 
@@ -38,12 +39,15 @@ The **cMsmqQueuePermissionEntry** DSC resource provides a mechanism to manage pe
 * **AccessRights**: Indicates the access rights to be granted to the principal.
  Specify one or more values from the [System.Messaging.MessageQueueAccessRights](https://msdn.microsoft.com/en-us/library/system.messaging.messagequeueaccessrights%28v=vs.110%29.aspx) enumeration type.
  Multiple values can be specified by using a single comma-separated string or as an array of strings.
+* **Cluster**: The name of the failover cluster where to create the queue is hosted.
 
 ## Versions
 
 ### 1.0.x (to be released)
 
 * Unit and integration tests created (not really).
+* Added support for failover cluster queues.
+* The internal cMsmq functions are now available to be used.
 
 ### 1.0.3 (November 24, 2015)
 

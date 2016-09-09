@@ -137,10 +137,16 @@ namespace cMsmq
 
         private static string TranslateUserNameToSid(string userName)
         {
-            var account = new NTAccount(userName);
-            var sid = (SecurityIdentifier)account.Translate(typeof(SecurityIdentifier));
-
-            return sid.ToString();
+            try
+            {
+                var account = new NTAccount(userName);
+                var sid = (SecurityIdentifier)account.Translate(typeof(SecurityIdentifier));
+                return sid.ToString();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(String.Format("Could not translate username {0} to sid", userName), ex);
+            }
         }
 
         private static string TranslateSidToUserName(SecurityIdentifier sid)
@@ -235,6 +241,8 @@ namespace cMsmq
         public static MessageQueueAccessRights GetAccessMask(QueuePath queuePath, string userName)
         {
             var sid = TranslateUserNameToSid(userName);
+
+
             var gchSecurityDescriptor = GetSecurityDescriptorHandle(queuePath, (int)SecurityInformation.Dacl);
             var ace = GetAce(gchSecurityDescriptor.AddrOfPinnedObject(), sid);
             var aceMask = ace.Mask;

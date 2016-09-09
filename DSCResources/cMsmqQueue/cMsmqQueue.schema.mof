@@ -10,4 +10,5 @@ class cMsmqQueue : OMI_BaseResource
     [Write, Description("Indicates the description of the queue.")] String Label;
     [Write, Description("Indicates the privacy level associated with the queue."), ValueMap{"None","Optional","Body"}, Values{"None","Optional","Body"}] String PrivacyLevel;
     [Write, Description("Indicates the maximum size of the queue in KB.")] UInt32 QueueQuota;
+    [Write, Description("The name of the cluster where to create the queue")] String Cluster;
 };

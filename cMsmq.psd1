@@ -12,7 +12,7 @@
     Description = 'The cMsmq module contains DSC resources for managing private MSMQ queues. Supports Windows Server 2008 R2 and later.'
     PowerShellVersion = '4.0'
     CLRVersion = '4.0'
-	RequiredAssemblies = @('cMsmq.dll')
+    RequiredAssemblies = @('cMsmq.dll')
     FunctionsToExport = '*'
     CmdletsToExport = '*'
     VariablesToExport = '*'

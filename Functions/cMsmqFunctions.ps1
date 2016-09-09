@@ -357,6 +357,11 @@ function Reset-cMsmqQueueSecurity
         $Cluster
     )
     
+	if (-not $PSCmdlet.ShouldProcess($Name, 'Reset Queue Security'))
+	{
+		return
+	}
+
     $session = New-cMsmqSession $Cluster
 
     try
@@ -370,17 +375,11 @@ function Reset-cMsmqQueueSecurity
             $DefaultSecurity = 'Security=010007801c0000002800000000000000140000000200080000000000' +
                                '010100000000000512000000010500000000000515000000e611610036157811027bc60001020000'
             
-            if (-not $PSCmdlet.ShouldProcess($Name, 'Reset Queue Security'))
-            {
-                return
-            }
-
             $QueuePath = '.\private$\{0}' -f $Name
-
-            $CurrentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
             $QueueOwner = [cMsmq.Security]::GetOwner($Name)
-
-            Write-Verbose -Message "Queue Owner : '$QueueOwner'"
+			$CurrentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+			
+            Write-Verbose -Message "Queue '$Name' Owner is '$QueueOwner' while current user is '$CurrentUser'"
 
             if ($CurrentUser -ne $QueueOwner)
             {
@@ -635,32 +634,16 @@ function Test-cMsmqPermissions
         $Cluster
     )
     
-    $session = New-cMsmqSession $Cluster
+	Write-Verbose -Message "Testing if the user '$Principal' has the permission necessary to perform the operation ($Permission)"
+	$CurrentUserPermission = Get-cMsmqQueuePermission -Name $Name -Principal $Principal -Cluster $Cluster -ErrorAction SilentlyContinue
 
-    try
-    {
-        Invoke-Command -ScriptBlock {
-            param
-            (
-                $Name,
-                $Permission,
-                $Principal
-            )
-
-            Write-Verbose -Message "Testing if the user '$Principal' has the permission necessary to perform the operation ($Permission)"
-            $CurrentUserPermission = Get-cMsmqQueuePermission -Name $Name -Principal $Principal -Cluster $Cluster -ErrorAction SilentlyContinue
-
-            if (-not $CurrentUserPermission -or -not $CurrentUserPermission.HasFlag($Permission))
-            {
-                Write-Verbose "User '$Principal' does not have the '$Permission' permission on queue '$Name'."
-                Reset-cMsmqQueueSecurity -Name $Name -Confirm:$false
-            }
-        } -ArgumentList $Name,$Permission,$Principal -Session $session
-    }
-    finally
-    {
-        Remove-cMsmqSession $session | Out-Null
-    }
+	if (-not $CurrentUserPermission -or -not $CurrentUserPermission.HasFlag($Permission))
+	{
+		Write-Verbose "User '$Principal' does not have the '$Permission' permission on queue '$Name'."
+		return $false
+	}
+    
+    return $true
 }
 
 function Set-cMsmqPermissions

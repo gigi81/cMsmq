@@ -1,5 +1,7 @@
 #requires -Version 4.0
 
+Import-Module cMsmq
+
 function Get-TargetResource
 {
     [CmdletBinding()]

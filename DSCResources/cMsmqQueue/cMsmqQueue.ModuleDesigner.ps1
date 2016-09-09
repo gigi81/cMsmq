@@ -1,6 +1,5 @@
 #requires -Version 4.0 -Modules xDSCResourceDesigner
 
-$DscModuleName   = 'cMsmq'
 $DscResourceName = 'cMsmqQueue'
 $DscFriendlyName = 'cMsmqQueue'
 $DscClassVersion = '1.0.0'
@@ -25,7 +24,6 @@ $DscResourceProperties =  @(
 Write-Host "updating '$moduleRoot' ..."
 
 New-xDscResource -Name $DscResourceName `
-                 -ModuleName $DscModuleName `
                  -Property $DscResourceProperties `
                  -Path $moduleRoot `
                  -FriendlyName $DscFriendlyName `

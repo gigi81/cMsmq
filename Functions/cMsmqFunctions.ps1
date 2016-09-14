@@ -211,6 +211,11 @@ function New-cMsmqQueue
         $Cluster
     )
 
+    if (-not $PSCmdlet.ShouldProcess($Name, 'Create Queue'))
+    {
+        return
+    }
+    
     $session = New-cMsmqSession $Cluster
 
     try
@@ -230,11 +235,6 @@ function New-cMsmqQueue
                 Label        = 'Label'
                 PrivacyLevel = 'EncryptionRequired'
                 QueueQuota   = 'MaximumQueueSize'
-            }
-
-            if (-not $PSCmdlet.ShouldProcess($Name, 'Create Queue'))
-            {
-                return
             }
 
             $QueuePath = '.\private$\{0}' -f $Name
@@ -296,6 +296,11 @@ function Remove-cMsmqQueue
         $Cluster
     )
 
+    if (-not $PSCmdlet.ShouldProcess($Name, 'Remove Queue'))
+    {
+        return
+    }
+
     $session = New-cMsmqSession $Cluster
 
     try
@@ -306,11 +311,6 @@ function Remove-cMsmqQueue
                 $Name
             )
             
-            if (-not $PSCmdlet.ShouldProcess($Name, 'Remove Queue'))
-            {
-                return
-            }
-
             $QueuePath = '.\private$\{0}' -f $Name
 
             try
@@ -474,7 +474,12 @@ function Set-cMsmqQueue
         [String]
         $Cluster
     )
-    
+
+    if (-not $PSCmdlet.ShouldProcess($Name, 'Set Queue'))
+    {
+        return
+    }
+
     $session = New-cMsmqSession $Cluster
 
     try
@@ -493,11 +498,6 @@ function Set-cMsmqQueue
                 Label        = 'Label'
                 PrivacyLevel = 'EncryptionRequired'
                 QueueQuota   = 'MaximumQueueSize'
-            }
-
-            if (-not $PSCmdlet.ShouldProcess($Name, 'Set Queue'))
-            {
-                return
             }
 
             $QueuePath = '.\private$\{0}' -f $Name

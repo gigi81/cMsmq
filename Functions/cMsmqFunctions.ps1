@@ -635,7 +635,7 @@ function Test-cMsmqPermissions
     )
     
     Write-Verbose -Message "Testing if the user '$Principal' has the permission necessary to perform the operation ($Permission)"
-    $CurrentUserPermission = Get-cMsmqQueuePermission -Name $Name -Principal $Principal -Cluster $Cluster -ErrorAction SilentlyContinue
+    $CurrentUserPermission = [System.Messaging.MessageQueueAccessRights] (Get-cMsmqQueuePermission -Name $Name -Principal $Principal -Cluster $Cluster -ErrorAction SilentlyContinue)
 
     if (-not $CurrentUserPermission -or -not $CurrentUserPermission.HasFlag($Permission))
     {

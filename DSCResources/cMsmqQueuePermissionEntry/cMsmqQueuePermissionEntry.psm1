@@ -177,13 +177,13 @@ function Set-TargetResource
     $revoke = if ($Ensure -eq 'Absent') { $true } else { $false }
     
     #test if the user DSC is running on (should be SYSTEM) has permissions to change the queue permissions
-    if(-not (Test-cMsmqPermissions -Name $Name -Cluster $Cluster -Permission [System.Messaging.MessageQueueAccessRights]::ChangeQueuePermissions))
+    if(-not (Test-cMsmqPermissions -Name $Name -Cluster $Cluster -Permission 'ChangeQueuePermissions'))
     {
         #try to reset the permissions by changing the permissions on the queue file
         Reset-cMsmqQueueSecurity -Name $Name -Cluster $Cluster -Confirm:$false
     }
     
-    Set-cMsmqPermissions -Name $Name -Cluster $Cluster -Principal $Principal -Permission $AccessRights -Revoke $revoke
+    Set-cMsmqPermissions -Name $Name -Cluster $Cluster -Principal $Principal -Permission $AccessRights -Revoke:$revoke
 }
 
 Export-ModuleMember -Function *-TargetResource
